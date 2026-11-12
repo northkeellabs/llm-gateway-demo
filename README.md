@@ -35,7 +35,7 @@ client / app --(Bearer virtual key)--> [Caddy/nginx TLS] --> LiteLLM Proxy :4000
 ```
 
 - `config.yaml`: models (`gpt-4o-mini`, `claude-sonnet`, `gpt-4o`), a fallback route `resilient-chat` (primary is a deliberately failing mock, falls back to `gpt-4o-mini`), and general settings (master key and DB URL from env).
-- Keys: A = team "analytics", models gpt-4o-mini + claude-sonnet, budget $5. B = team "support", gpt-4o-mini only, budget $1, 10 requests/minute.
+- Keys: A = team "analytics", models gpt-4o-mini + claude-sonnet, budget $1. B = team "support", gpt-4o-mini only, budget $1, 10 requests/minute.
 
 ## Install (Ubuntu 22.04/24.04, native)
 
@@ -54,6 +54,7 @@ set -a; . ./.env; set +a; export PATH=$PWD/.venv/bin:$PATH
 prisma generate --schema .venv/lib/python3*/site-packages/litellm/proxy/schema.prisma
 litellm --config config.yaml --port 4000     # applies DB migrations on first start
 scripts/create_keys.sh                        # writes .keys.env (git-ignored)
+python3 scripts/seed_traffic.py               # ~80 varied calls so spend, logs and usage have data
 python3 scripts/acceptance_test.py | tee test-results.txt
 ```
 
@@ -81,7 +82,7 @@ c) key B -> claude-sonnet refused          PASS    HTTP 403
 d) key B -> gpt-4o refused                 PASS    HTTP 403
 e) no key / bad key refused                PASS    no key HTTP 401, bad key HTTP 401
    key B -> gpt-4o-mini allowed (sanity)   PASS    HTTP 200
-f) key A spend > 0, logs + tokens visible  PASS    spend=$0.00035295, log rows=2, total tokens=66, models=['anthropic/claude-sonnet-4-5', 'openai/gpt-4o-mini']
+f) key A spend > 0, logs + tokens visible  PASS    spend=$0.50091075, log rows=49, total tokens=218607, models=['anthropic/claude-sonnet-4-5', 'openai/gpt-4o-mini']
 g) fallback resilient-chat -> gpt-4o-mini  PASS    HTTP 200: 'Mock reply from gpt-4o-mini via the gateway'
 
 OVERALL: PASS
@@ -91,20 +92,25 @@ Refusals return 403 for a valid key that lacks access to the model and 401 for a
 
 ## Screenshots (admin UI, v1.109.1)
 
-- `screenshots/00-login.png`: login page.
-- `screenshots/01-virtual-keys.png`: Virtual Keys page showing key A and key B with team and spend/budget.
+Taken after `scripts/seed_traffic.py` sent about 150 calls through the gateway (mocked replies, list-price costs), so the numbers are not empty. Times in the UI are UTC.
+
+**Virtual keys.** Each key belongs to a team and has a budget; the bar shows spend against it (key B $0.40 of $1, key A $0.55 of $1).
 
 ![Virtual keys](screenshots/01-virtual-keys.png)
 
-The red banner is LiteLLM warning that the admin login uses a username and password from the environment file. That is fine for a demo; for production use SSO or put the admin UI behind your VPN (see Limitations). Spend shows fractions of a cent because only the test calls were sent, priced at list rates.
+The red banner is LiteLLM warning that the admin login uses a username and password from the environment file. That is fine for a demo; for production use SSO or keep the admin UI behind your VPN (see Limitations).
 
-- `screenshots/03-logs.png`: request logs: the successful and refused test calls, per-call cost, tokens, key alias, team.
+**One key in detail.** Key A may call only gpt-4o-mini and claude-sonnet, and has spent $0.55 of its $1 budget.
+
+![Key detail](screenshots/04-key-detail.png)
+
+**Request logs.** Every call with its team, key, model, cost and tokens. The "Failure" rows are key B asking for claude-sonnet, which it is not allowed to use, and being refused with HTTP 403. The row with no team or key alias is the fallback test, sent with the admin master key.
 
 ![Request logs](screenshots/03-logs.png)
 
-The 4 "Failure" rows are the access-control tests working as intended: key B refused for claude-sonnet and gpt-4o (HTTP 403), and the calls with no key and with a bad key (HTTP 401). The top row is the fallback test, sent with the admin master key, so it has no team or key alias.
+**Usage.** Total spend, requests (successful and refused) and tokens, with daily spend split by model.
 
-- `screenshots/02-usage.png`: usage overview. The headline Spend tile shows "$0.00" because the total (about $0.0004) is below the tile's 2-decimal rounding; request and token counts are correct.
+![Usage](screenshots/02-usage.png)
 
 ## Limitations
 
@@ -116,4 +122,4 @@ The 4 "Failure" rows are the access-control tests working as intended: key B ref
 
 ## Files
 
-`config.yaml`, `.env.example`, `scripts/` (create_keys.sh, acceptance_test.py, screenshots.py), `deploy/` (install.sh, litellm.service, Caddyfile.example, nginx.conf.example), `test-results.txt`, `screenshots/`, `LICENSE` (MIT, covers our own files; LiteLLM has its own licence).
+`config.yaml`, `.env.example`, `scripts/` (create_keys.sh, seed_traffic.py, acceptance_test.py, screenshots.py), `deploy/` (install.sh, litellm.service, Caddyfile.example, nginx.conf.example), `test-results.txt`, `screenshots/`, `LICENSE` (MIT, covers our own files; LiteLLM has its own licence).

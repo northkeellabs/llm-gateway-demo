@@ -18,9 +18,9 @@ for t in analytics support; do
     -d "{\"team_id\":\"$t\",\"team_alias\":\"$t\"}" >/dev/null || true
 done
 
-KEY_A=$(gen '{"key_alias":"key-a-analytics","team_id":"analytics","models":["gpt-4o-mini","claude-sonnet"],"max_budget":5}')
+KEY_A=$(gen '{"key_alias":"key-a-analytics","team_id":"analytics","models":["gpt-4o-mini","claude-sonnet"],"max_budget":1}')
 KEY_B=$(gen '{"key_alias":"key-b-support","team_id":"support","models":["gpt-4o-mini"],"max_budget":1,"rpm_limit":10}')
 umask 077
 printf 'KEY_A=%s\nKEY_B=%s\n' "$KEY_A" "$KEY_B" > .keys.env
-echo "Created key A (analytics: gpt-4o-mini, claude-sonnet, budget 5) and key B (support: gpt-4o-mini, budget 1, rpm 10)."
+echo "Created key A (analytics: gpt-4o-mini, claude-sonnet, budget 1) and key B (support: gpt-4o-mini, budget 1, rpm 10)."
 echo "Saved to .keys.env"

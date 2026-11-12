@@ -7,7 +7,7 @@ c) key B -> claude-sonnet refused          PASS    HTTP 403
 d) key B -> gpt-4o refused                 PASS    HTTP 403
 e) no key / bad key refused                PASS    no key HTTP 401, bad key HTTP 401
    key B -> gpt-4o-mini allowed (sanity)   PASS    HTTP 200
-f) key A spend > 0, logs + tokens visible  PASS    spend=$0.00035295, log rows=2, total tokens=66, models=['anthropic/claude-sonnet-4-5', 'openai/gpt-4o-mini']
+f) key A spend > 0, logs + tokens visible  PASS    spend=$0.50091075, log rows=49, total tokens=218607, models=['anthropic/claude-sonnet-4-5', 'openai/gpt-4o-mini']
 g) fallback resilient-chat -> gpt-4o-mini  PASS    HTTP 200: 'Mock reply from gpt-4o-mini via the gateway'
 
 OVERALL: PASS
