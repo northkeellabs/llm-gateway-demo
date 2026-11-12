@@ -4,7 +4,7 @@ Author: Northkeel Labs (northkeellabs.com)
 
 A small, working demo of a centralized LLM gateway built on the open-source LiteLLM Proxy 1.109.1: one OpenAI-compatible endpoint in front of OpenAI and Anthropic models, virtual API keys with per-key model access, budgets and rate limits, token and cost tracking, request logs, a fallback route, and the LiteLLM admin UI. It runs natively (PostgreSQL from apt, a Python venv, a systemd unit). No Docker.
 
-**Video walkthrough (69 s, voice + captions):** the acceptance test, then the keys, logs and usage pages.
+**Video walkthrough (69 s, voice + captions):** the acceptance test, then the keys, logs and usage pages. GitHub starts videos muted: click the speaker icon in the player to hear the voiceover.
 
 https://github.com/user-attachments/assets/fb4b8e3d-80c2-4a08-9206-39f17259f08a
 
