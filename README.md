@@ -78,7 +78,13 @@ Refusals return 403 for a valid key that lacks access to the model and 401 for a
 
 - `screenshots/00-login.png`: login page.
 - `screenshots/01-virtual-keys.png`: Virtual Keys page showing key A and key B with team and spend/budget.
+
+![Virtual keys](screenshots/01-virtual-keys.png)
+
 - `screenshots/03-logs.png`: request logs: the successful and refused test calls, per-call cost, tokens, key alias, team.
+
+![Request logs](screenshots/03-logs.png)
+
 - `screenshots/02-usage.png`: usage overview. The headline Spend tile shows "$0.00" because the total (about $0.0004) is below the tile's 2-decimal rounding; request and token counts are correct.
 
 ## Limitations
