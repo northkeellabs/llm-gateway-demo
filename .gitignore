@@ -1,0 +1,6 @@
+.env
+.keys.env
+.venv/
+litellm.log
+__pycache__/
+node_modules/

@@ -1,0 +1,42 @@
+# LiteLLM Proxy config - DEMO (provider calls are mocked, no real keys).
+# To go live: remove every `mock_response` line and set OPENAI_API_KEY / ANTHROPIC_API_KEY in .env.
+model_list:
+  - model_name: gpt-4o-mini
+    litellm_params:
+      model: openai/gpt-4o-mini
+      api_key: os.environ/OPENAI_API_KEY
+      mock_response: "Mock reply from gpt-4o-mini via the gateway"
+      # Mocked calls log zero cost by default; explicit prices make spend non-zero (USD per token).
+      input_cost_per_token: 0.00000015
+      output_cost_per_token: 0.0000006
+  - model_name: claude-sonnet
+    litellm_params:
+      model: anthropic/claude-sonnet-4-5
+      api_key: os.environ/ANTHROPIC_API_KEY
+      mock_response: "Mock reply from claude-sonnet via the gateway"
+      input_cost_per_token: 0.000003
+      output_cost_per_token: 0.000015
+  - model_name: gpt-4o
+    litellm_params:
+      model: openai/gpt-4o
+      api_key: os.environ/OPENAI_API_KEY
+      mock_response: "Mock reply from gpt-4o via the gateway"
+      input_cost_per_token: 0.0000025
+      output_cost_per_token: 0.00001
+  # Fallback demo: primary always fails (mocked 500), router falls back to gpt-4o-mini.
+  - model_name: resilient-chat
+    litellm_params:
+      model: openai/gpt-4o
+      api_key: os.environ/OPENAI_API_KEY
+      mock_response: "litellm.InternalServerError"
+
+router_settings:
+  num_retries: 0
+  fallbacks: [{"resilient-chat": ["gpt-4o-mini"]}]
+
+litellm_settings:
+  drop_params: true
+
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
+  database_url: os.environ/DATABASE_URL

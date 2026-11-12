@@ -1,0 +1,21 @@
+[Unit]
+Description=LiteLLM Proxy (LLM API gateway)
+After=network-online.target postgresql.service
+Wants=network-online.target
+Requires=postgresql.service
+
+[Service]
+Type=simple
+User=litellm
+Group=litellm
+WorkingDirectory=/opt/llm-gateway
+EnvironmentFile=/opt/llm-gateway/.env
+ExecStart=/opt/llm-gateway/.venv/bin/litellm --config /opt/llm-gateway/config.yaml --host 127.0.0.1 --port 4000
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+ProtectSystem=full
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
