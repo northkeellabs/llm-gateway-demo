@@ -4,6 +4,21 @@ Author: Northkeel Labs (northkeellabs.com)
 
 A small, working demo of a centralized LLM gateway built on the open-source LiteLLM Proxy 1.109.1: one OpenAI-compatible endpoint in front of OpenAI and Anthropic models, virtual API keys with per-key model access, budgets and rate limits, token and cost tracking, request logs, a fallback route, and the LiteLLM admin UI. It runs natively (PostgreSQL from apt, a Python venv, a systemd unit). No Docker.
 
+## Acceptance test: 8 of 8 pass
+
+| Check | Result |
+|---|---|
+| Key A (team analytics) calls gpt-4o-mini | PASS, HTTP 200 |
+| Key A calls claude-sonnet | PASS, HTTP 200 |
+| Key B (team support) calls claude-sonnet, not in its allowed models | PASS, refused with HTTP 403 |
+| Key B calls gpt-4o, not in its allowed models | PASS, refused with HTTP 403 |
+| No key, and a bad key | PASS, both refused with HTTP 401 |
+| Key B calls gpt-4o-mini, which it is allowed | PASS, HTTP 200 |
+| Spend, tokens and log rows recorded per key | PASS |
+| Fallback: primary provider fails, request is answered by gpt-4o-mini | PASS, HTTP 200 |
+
+Full output in [Acceptance test results](#acceptance-test-results) and `test-results.txt`. Run it yourself with `scripts/acceptance_test.py`.
+
 ## IMPORTANT: provider calls are mocked
 
 This demo has no paid provider keys. Every model in `config.yaml` uses LiteLLM's `mock_response`, so calls succeed and return a canned string like "Mock reply from gpt-4o-mini via the gateway" without contacting OpenAI or Anthropic. Auth, key restrictions, budgets, routing, fallback, spend tracking, logs and the UI are all real; only the model's answer is fake. For real use, set real `OPENAI_API_KEY` and `ANTHROPIC_API_KEY` in the environment file and delete the `mock_response` lines (and optionally the explicit `input_cost_per_token`/`output_cost_per_token` lines, since LiteLLM then uses its built-in price table).
@@ -81,9 +96,13 @@ Refusals return 403 for a valid key that lacks access to the model and 401 for a
 
 ![Virtual keys](screenshots/01-virtual-keys.png)
 
+The red banner is LiteLLM warning that the admin login uses a username and password from the environment file. That is fine for a demo; for production use SSO or put the admin UI behind your VPN (see Limitations). Spend shows fractions of a cent because only the test calls were sent, priced at list rates.
+
 - `screenshots/03-logs.png`: request logs: the successful and refused test calls, per-call cost, tokens, key alias, team.
 
 ![Request logs](screenshots/03-logs.png)
+
+The 4 "Failure" rows are the access-control tests working as intended: key B refused for claude-sonnet and gpt-4o (HTTP 403), and the calls with no key and with a bad key (HTTP 401). The top row is the fallback test, sent with the admin master key, so it has no team or key alias.
 
 - `screenshots/02-usage.png`: usage overview. The headline Spend tile shows "$0.00" because the total (about $0.0004) is below the tile's 2-decimal rounding; request and token counts are correct.
 
