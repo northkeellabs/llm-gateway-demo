@@ -1,6 +1,6 @@
 # LLM API Gateway demo (LiteLLM Proxy)
 
-Author: Northkeel Labs (northkeellabs.com)
+Built by [Northkeel Labs](https://northkeellabs.com): AI agents and MCP servers that run inside your own systems.
 
 A small, working demo of a centralized LLM gateway built on the open-source LiteLLM Proxy 1.109.1: one OpenAI-compatible endpoint in front of OpenAI and Anthropic models, virtual API keys with per-key model access, budgets and rate limits, token and cost tracking, request logs, a fallback route, and the LiteLLM admin UI. It runs natively (PostgreSQL from apt, a Python venv, a systemd unit). No Docker.
 
